@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "FolderProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service FolderService {
+  // ListFolders provides a list of the available folders.
+  rpc ListFolders(ListFoldersRequest) returns (ListFoldersResponse) {
+    option (google.api.http) = { get: "/v1/folders" };
+  }
+
+  // CreateFolder creates new Folders.
+  rpc CreateFolder(CreateFolderRequest) returns (Folder) {
+    option (google.api.http) = { post: "/v1/folders" body: "*" };
+  }
+
+  // GetFolder fetches a Folder.
+  rpc GetFolder(GetFolderRequest) returns (Folder) {
+    option (google.api.http) = { get: "/v1/folders/{folder_id}" };
+  }
+
+  // EditFolder updates the name and/or description of the Folder.
+  rpc EditFolder(Folder) returns (google.protobuf.Empty) {
+    option (google.api.http) = { patch: "/v1/folders/{id}" body: "*" };
+  }
+
+  // DeleteFolder deletes the specified Folder.
+  rpc DeleteFolder(DeleteFolderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v1/folders/{folder_id}" };
+  }
+
+  // MoveFolder moves the specified Folder.
+  rpc MoveFolder(MoveFolderRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { post: "/v1/folders/{folder_id}/move" body: "*" };
+  }
+}
+
+// Request message for `ListFolders`.
+message ListFoldersRequest {
+  // Query used for filtering and search
+  string query = 1;
+
+  // If specified, list folders that are children of the Folder
+  // provided as parent_id. If not specified all folders are returned.
+  string parent_id = 2;
+
+  // If specified, list only folders that are equal or below the specified
+  // level. If not specified only root nodes are provided.
+  int32 level_limit = 3;
+
+  // Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 4;
+
+  // A token identifying a page of results to return.
+  // Should be a `next_page_token` value returned from a previous call to
+  // `ListFolders`. If not specified, the first page of result is returned.
+  string page_token = 5;
+}
+
+// Response message for `ListFolders`.
+message ListFoldersResponse {
+  // A list of `Folder` objects
+  repeated Folder folders = 1;
+
+  // A token to use for retriving the next page of results.
+  // Next result can be fetched using this value inside `page_token` for the
+  // next call to `ListFolders`. If the field is empty there are no results
+  // to retrive.
+  string next_page_token = 2;
+}
+
+// Request message for `CreateFolder`.
+message CreateFolderRequest {
+  // The unique ID for the parent `Folder` object. If left blank,
+  // the new Folder will become a root-Folder with a level of `0`.
+  string parent_id = 1;
+  // Name of the new Folder
+  string name = 2;
+  // Description of the new Folder.
+  string description = 3;
+}
+
+// Request message for `GetFolder`.
+message GetFolderRequest {
+  // The unique ID of the Folder.
+  string folder_id = 1;
+}
+
+// Request message for `DeleteFolder`.
+message DeleteFolderRequest {
+  // The unqiue ID of the Folder.
+  string folder_id = 1;
+}
+
+// Request message for `MoveFolder`.
+message MoveFolderRequest {
+  // The unqiue ID of the Folder.
+  string folder_id = 1;
+  // The ID of the new parent folder. If left blank,
+  // the Folder will be moved to root (level 0).
+  string parent_id = 2;
+}
+
+// A Folder that can contains children (sub-Folder) and
+// group Things together.
+message Folder {
+  // Metadata provides aggregated values of connected things and folders.
+  message Metadata {
+    // Number of Things currently placed within the Folder.
+    int32 things_count = 1;
+    // Number of Things placed within a sub-Folder of the current Folder.
+    int32 things_count_total = 2;
+    // Number of direct (one level) sub-Folders of the current Folder.
+    int32 subfolder_count = 3;
+    // Total number of sub-Folders (all levels) of the current Folder.
+    int32 subfolder_count_total = 4;
+  }
+  // The unique ID of the Folder.
+  string id = 1;
+  // The unique ID of the parent Folder. May be blank.
+  string parent_id = 2;
+  // The hierarchical position of the Folder.
+  int32 level = 3;
+  // The display name of the Folder.
+  string name = 4;
+  // Description of the Folder.
+  string description = 5;
+  // Additional metadata about the Folder.
+  Metadata metadata = 6;
+}

@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "NoteProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+// for grpc-gateway
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+// Note service provide comment functionality for Things.
+service NoteService {
+  rpc ListNotes(ListNotesRequest) returns (ListNotesResponse) {
+    option (google.api.http) = { get: "/v1/notes" };
+  }
+
+  rpc CreateNote(CreateNoteRequest) returns (Note) {
+    option (google.api.http) = { post: "/v1/notes" body: "*" };
+  }
+
+  rpc EditNote(EditNoteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { put: "/v1/notes/{note_id}" body: "*" };
+  }
+
+  rpc GetNote(GetNoteRequest) returns (Note) {
+    option (google.api.http) = { get: "/v1/notes/{note_id}" };
+  }
+
+  rpc DeleteNote(DeleteNoteRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v1/notes/{note_id}" };
+  }
+}
+
+// Request message for `ListNotes`.
+message ListNotesRequest {
+  // Filter the response based on the related object ID.
+  string object_id = 1;
+
+  // Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 2;
+
+  // A token identifying a page of results to return.
+  // Should be a `next_page_token` value returned from a previous call to
+  // `ListNotes`. If not specified, the first page of result is returned.
+  string page_token = 3;
+}
+
+// Response message for `ListNotes`.
+message ListNotesResponse {
+  // A list of `Note` objects.
+  repeated Note notes = 1;
+
+  // A token to use for retriving the next page of results.
+  // Next result can be fetched using this value inside `page_token` for the
+  // next call to `ListNotes`. If the field is empty there are no results
+  // to retrive.
+  string next_page_token = 2;
+}
+
+// Request message for `CreateNote`.
+message CreateNoteRequest {
+  // The unique ID of the object to attach to the `Note`.
+  string object_id = 1;
+  // The content of the `Note`.
+  string content = 2;
+}
+
+// Request message for `EditNote`.
+message EditNoteRequest {
+  string note_id = 1; // The unqiue ID of the `Note` to edit.
+  string content = 2; // The new content of the `Note`.
+}
+
+// Request message for `GetNote`.
+message GetNoteRequest {
+  // The unqiue ID of the `Note` to fetch.
+  string note_id = 1;
+}
+
+// Request message for `DeleteNote`.
+message DeleteNoteRequest {
+  // The unqiue ID of the `Note` to delete.
+  string note_id = 1;
+}
+
+// Note represents a note posted on an object, made by a `User`.
+message Note {
+  // The unique ID of the Note.
+  string id = 1;
+  // The unique ID of the related object.
+  string object_id = 2;
+  // The content of the `Note`.
+  string content = 3;
+}

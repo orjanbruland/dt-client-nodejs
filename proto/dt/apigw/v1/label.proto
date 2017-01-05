@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "LabelProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service LabelService {
+  rpc ListLabels(ListLabelsRequest) returns (ListLabelsResponse) {
+    option (google.api.http) = { get: "/v1/labels" };
+  }
+
+  rpc CreateLabel(CreateLabelRequest) returns (Label) {
+    option (google.api.http) = { post: "/v1/labels" body: "*"};
+  }
+
+  rpc GetLabel(GetLabelRequest) returns (Label) {
+    option (google.api.http) = { get: "/v1/labels/{label_id}" };
+  }
+
+  rpc EditLabel(Label) returns (google.protobuf.Empty) {
+    option (google.api.http) = { put: "/v1/labels/{id}" body: "*" };
+  }
+
+  rpc DeleteLabel(DeleteLabelRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v1/labels/{label_id}" };
+  }
+}
+
+/// Request message for `ListLabels`.
+message ListLabelsRequest {
+  /// Query used for filtering and search
+  string query = 1;
+
+  /// Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 2;
+
+  /// A token identifying a page of results to return.
+  /// Should be a `next_page_token` value returned from a previous call to
+  /// `ListLabels`. If not specified, the first page of result is returned.
+  string page_token = 3;
+}
+
+/// Response message for `ListLabels`.
+message ListLabelsResponse {
+  /// A list of `Label` objects
+  repeated Label labels = 1;
+
+  /// A token to use for retriving the next page of results.
+  /// Next result can be fetched using this value inside `page_token` for the
+  /// next call to `ListLabels`. If the field is empty there are no results
+  /// to retrive.
+  string next_page_token = 2;
+}
+
+/// Request message for `CreateLabel`.
+message CreateLabelRequest {
+  /// The name of the new Label.
+  string name = 1;
+}
+
+/// Request message for `GetLabel`.
+message GetLabelRequest {
+  /// The unique ID  of the Label to fetch.
+  string label_id = 1;
+}
+
+/// Request message for `DeleteLabel`.
+message DeleteLabelRequest {
+  /// The unique ID of the Label to delete.
+  string label_id = 1;
+}
+
+/// Represents a Label attached to Things
+message Label {
+  /// Metadata provides additional aggregated metrics for the Label
+  message Metadata {
+    /// Total number of Things attached to the Label
+    int32 things_count = 1;
+  }
+  /// The unique ID of the Label
+  string id = 1;
+  /// The display name of the Label
+  string name = 2;
+  /// Label metadata
+  Metadata metadata = 3;
+}

@@ -1,0 +1,197 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "NavigationProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+import "google/api/annotations.proto";
+import "google/protobuf/empty.proto";
+
+service NavigationService {
+
+  /// ListViews returns a page of views for the current partner. The page number
+  /// is determined by the page token. A page token is also returned if there
+  /// are more results available. It can be used to fetch the next page.
+  rpc ListViews(ListViewsRequest) returns (ListViewsResponse) {
+    option (google.api.http) = { get: "/v1/navigation/views" };
+  }
+
+  /// CreateView creates a new view (saved search).
+  rpc CreateView(CreateViewRequest) returns (View) {
+    option (google.api.http) = { post: "/v1/navigation/views" body: "*" };
+  }
+
+  /// GetView takes the view ID and returns the corresponding view.
+  rpc GetView(GetViewRequest) returns (View) {
+    option (google.api.http) = { get: "/v1/navigation/views/{view_id}" };
+  }
+
+  /// EditView makes changes to an existing view.
+  rpc EditView(EditViewRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { put: "/v1/navigation/views/{view_id}" body: "*" };
+  }
+
+  /// DeleteView deletes a view.
+  rpc DeleteView(DeleteViewRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v1/navigation/views/{view_id}" };
+  }
+
+  /// ListViewCategories returns a page of view categories for the current
+  /// partner. The page number is determined by the page token. A page token is
+  /// also returned if there are more results available. It can be used to fetch
+  /// the next page.
+  rpc ListViewCategories (ListViewCategoriesRequest) returns (ListViewCategoriesResponse) {
+    option (google.api.http) = { get: "/v1/navigation/categories" };
+  }
+
+  /// CreateViewCategory creates a new view category.
+  rpc CreateViewCategory (CreateViewCategoryRequest) returns (ViewCategory) {
+    option (google.api.http) = { post: "/v1/navigation/categories" body: "*" };
+  }
+
+  /// GetViewCategory takes a view category ID and returns the corresponding
+  /// view category.
+  rpc GetViewCategory (GetViewCategoryRequest) returns (ViewCategory) {
+    option (google.api.http) = { get: "/v1/navigation/categories/{view_category_id}" };
+  }
+
+  /// EditViewCategory edits an existing view category.
+  rpc EditViewCategory(EditViewCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { put: "/v1/navigation/categories/{view_category_id}" body: "*" };
+  }
+
+  /// DeleteViewCategory deletes a view category.
+  rpc DeleteViewCategory (DeleteViewCategoryRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { delete: "/v1/navigation/categories/{view_category_id}" };
+  }
+}
+
+/// Request message for `ListViews`.
+message ListViewsRequest {
+  /// Query used for filtering and search
+  string query = 1;
+
+  /// Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 2;
+
+  /// A token identifying a page of results to return.
+  /// Should be a `next_page_token` value returned from a previous call to
+  /// `ListViews`. If not specified, the first page of result is returned.
+  string page_token = 3;
+}
+
+/// Response message for `ListViews`.
+message ListViewsResponse {
+  /// A list of `Label` objects
+  repeated View views = 1;
+
+  /// A token to use for retriving the next page of results.
+  /// Next result can be fetched using this value inside `page_token` for the
+  /// next call to `ListViews`. If the field is empty there are no results
+  /// to retrive.
+  string next_page_token = 2;
+}
+
+/// Request message for `CreateView`.
+message CreateViewRequest {
+  string search_query = 1;
+  string name         = 2;
+  string category_id  = 3;
+}
+
+/// Request message for `GetView`.
+message GetViewRequest {
+  /// The unique ID of the View.
+  string view_id = 1;
+}
+
+message EditViewRequest {
+  string view_id      = 1;
+  string search_query = 2;
+  string name         = 3;
+  string category_id  = 4;
+}
+
+/// Request message for `DeleteView`.
+message DeleteViewRequest {
+  /// The unique ID of the View.
+  string view_id = 1;
+}
+
+/// Request message for `ListViewCategories`.
+message ListViewCategoriesRequest {
+  /// If specified, list ViewCategories that are children of the ViewCategory
+  /// provided as parent_id. If not specified all ViewCategories are returned.
+  string parent_id = 1;
+
+  /// If specified, list only ViewCategories that are equal or below the specified
+  /// level. If not specified only root nodes are provided.
+  int32 level_limit = 2;
+
+  /// Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 3;
+
+  /// A token identifying a page of results to return.
+  /// Should be a `next_page_token` value returned from a previous call to
+  /// `ListViewCategories`. If not specified, the first page of result is returned.
+  string page_token = 4;
+}
+
+/// Response message for `ListViewCategories`.
+message ListViewCategoriesResponse {
+  /// A list of `Folder` objects
+  repeated ViewCategory categories = 1;
+
+  /// A token to use for retriving the next page of results.
+  /// Next result can be fetched using this value inside `page_token` for the
+  /// next call to `ListViewCategories`. If the field is empty there are no results
+  /// to retrive.
+  string next_page_token = 2;
+}
+
+/// Request message for `CreateViewCategory`.
+message CreateViewCategoryRequest {
+  string name      = 1;
+  string parent_id = 2;
+}
+
+/// Request message for `GetViewCategory`.
+message GetViewCategoryRequest {
+  /// The unqiue ID of the ViewCategory.
+  string view_category_id = 1;
+}
+
+message EditViewCategoryRequest {
+  string view_category_id = 1;
+  string name             = 2;
+  string parent_id        = 3;
+}
+
+/// Request message for `DeleteViewCategory`.
+message DeleteViewCategoryRequest {
+  /// The unqiue ID of the ViewCategory.
+  string view_category_id = 1;
+}
+
+/// View is a snapshot of a search, that can be saved and categorized.
+message View {
+  string id           = 1;
+  string search_query = 2;
+  string name         = 3;
+  string category_id  = 4;
+}
+
+/// Category for Views
+message ViewCategory {
+  /// The unique ID of the ViewCategory.
+  string id = 1;
+  /// The display name of the ViewCategory
+  string name = 2;
+  /// The parent ViewCategory. If not present, the ViewCategory is top-level
+  /// item.
+  string parent_id = 3;
+}
