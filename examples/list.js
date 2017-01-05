@@ -1,6 +1,5 @@
 var grpc = require('grpc'),
-    // Replace with require('dt-client-nodejs')
-    dt = require('./../index.js');
+    dt = require('dt-client-nodejs');
 
 var ssl_creds = grpc.credentials.createSsl();
 var call_creds = dt.auth.createFromApiKeyCredential('your_apikey_here');

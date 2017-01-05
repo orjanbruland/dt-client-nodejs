@@ -3,7 +3,7 @@
 ## Installation
 
 ```console
-npm install --save <repo>
+npm install --save https://github.com/disruptive-technologies/dt-client-nodejs
 ```
 
 ## Documentation
