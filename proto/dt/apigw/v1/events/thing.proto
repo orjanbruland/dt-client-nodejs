@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package dt.apigw.v1.events;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1/events";
+option java_multiple_files = true;
+option java_outer_classname = "EventsProto";
+option java_package = "com.dt.apigw.v1.events";
+option objc_class_prefix = "DTD";
+
+import "google/protobuf/timestamp.proto";
+
+// ThingStateChangeEvent is fired on every reporting from the node.
+// Currently, this also includes hearthbeat messages.
+message ThingStateChangeEvent {
+  // Temperature value in celcius
+  float temperature = 1;
+  // On proximity nodes this will report `true` when the precense of
+  // an object is detected, otherwise `false`.
+  bool object_present = 2;
+  // If the state change indicates that the node has been touched,
+  // `touch` is reported as `true`. Otherwise `false`.
+  bool touch = 3;
+  // The timestamp of the `last_pressed`
+  google.protobuf.Timestamp last_pressed = 5;
+  // The signal strength in dBM
+  sint32 rssi = 6;
+  // The signal strength in values from 0-5
+  int32 rssi_strength = 7;
+  // The battery voltage
+  float battery_voltage = 8;
+  // The battery percentage (this is just a simple estimate).
+  float battery_percentage = 9;
+  // The Cloud Connector ID broadcasting the signal.
+  string connector_id = 10;
+}
+
+// ThingTypeChangeEvent is fired when the `Thing` has been assiged to a
+// new `ThingType`.
+message ThingTypeChangeEvent {
+  string thing_type_id = 1;
+}
+
+// ThingNameChangeEvent is fired when the name of a `Thing` is changed.
+message ThingNameChangeEvent {
+  string name = 1;
+}
+
+// ThingDescriptionChangeEvent is fired when the description of a `Thing` is changed.
+message ThingDescriptionChangeEvent {
+  string description = 1;
+}
+
+// ThingLocationChangeEvent is fired when a new geo-location is set
+// for a `Thing`.
+message ThingLocationChangeEvent {
+  double latitude = 1;
+  double longitude = 2;
+}

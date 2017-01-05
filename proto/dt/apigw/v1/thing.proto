@@ -1,0 +1,391 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "ThingProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/struct.proto";
+import "google/protobuf/empty.proto";
+import "dt/apigw/v1/common.proto";
+import "dt/apigw/v1/folder.proto";
+import "dt/apigw/v1/label.proto";
+import "dt/apigw/v1/notification.proto";
+import "dt/apigw/v1/events/thing.proto";
+
+service ThingService {
+
+  // CreateThing creates a new thing based on an existing device ID. Returns the
+  // newly created thing ID.
+  rpc CreateThing(CreateThingRequest) returns (CreateThingResponse) {
+    option (google.api.http) = { post: "/v1/things" body: "*" };
+  }
+
+  // ListThings provides a list of available `Thing` objects.
+  // Takes an optional `query` to filter the returned items.
+  rpc ListThings(ListThingsRequest) returns (ListThingsResponse) {
+    option (google.api.http) = { get: "/v1/things" };
+  }
+
+  rpc GetThing(GetThingRequest) returns (Thing) {
+    option (google.api.http) = { get: "/v1/things/{thing_id}" };
+  }
+
+  rpc ThingStateQuery(ThingStateQueryRequest) returns (ThingStateQueryResponse) {
+    option (google.api.http) = { post: "/v1/things/{thing_id}/query" body: "*" };
+  }
+
+  rpc ThingStateAggregate(ThingStateAggregateRequest) returns (ThingStateAggregateResponse) {
+    option (google.api.http) = { post: "/v1/things/{thing_id}/aggregate" body: "*" };
+  }
+
+  // EditThing allows partial updates of a `Thing`.
+  rpc EditThing(EditThingRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { patch: "/v1/things/{thing_id}" body: "*" };
+  }
+
+  // StarThing marks a `Thing` as starred.
+  rpc StarThing(StarThingRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { post: "/v1/things/{thing_id}/star" body: "*" };
+  }
+
+  // UnstarThing marks a `Thing` as un-starred.
+  rpc UnstarThing(UnstarThingRequest) returns (google.protobuf.Empty) {
+    option (google.api.http) = { post: "/v1/things/{thing_id}/unstar" body: "*" };
+  }
+
+  // TODO: Remove this, since its already covered by "Watch"?
+  rpc WatchThing(WatchThingRequest) returns (stream WatchThingResponse) {
+    option (google.api.http) = { get: "/v1/things/{thing_id}/watch" };
+  }
+
+  rpc Watch(WatchRequest) returns (stream WatchResponse) {
+    option (google.api.http) = { get: "/v1/subscribe" };
+  }
+
+  /// BulkEditThing takes a series of thing IDs or a query resulting in a set
+  /// of things, and applies the update to all elements of the set.
+  rpc BulkEditThing(BulkEditThingRequest) returns (BulkEditThingResponse) {
+    option (google.api.http) = { patch: "/v1/things" body: "*" };
+  }
+
+  // rpc ListThingEvents(ListThingEventsRequest) returns (ListThingEventsResponse) {
+  //   option (google.api.http) = { get: "/v1/things/{thing_id}/events" };
+  // }
+}
+
+message CreateThingRequest {
+  bytes  device_id = 1; // The ID of the attached device
+  string type_id   = 2; // The Thing's ThingType
+  string name      = 3; // Optional name of the Thing
+  string firmware  = 4; // Optional firmware version of the attached device
+}
+
+message CreateThingResponse {
+  string thing_id = 1;
+}
+
+/// Request message for `ListThings`.
+message ListThingsRequest {
+  /// Query used for filtering and search
+  string query = 1;
+
+  /// Order used for ordering the response
+  string order = 2;
+
+  /// Requested page size. Maximum page size is 100; which is also the default.
+  int32 page_size = 3;
+
+  /// A token identifying a page of results to return.
+  /// Should be a `next_page_token` value returned from a previous call to
+  /// `ListThings`. If not specified, the first page of result is returned.
+  string page_token = 4;
+}
+
+/// Response message for `ListThings`.
+message ListThingsResponse {
+  /// A list of `Thing` objects.
+  repeated Thing things = 1;
+
+  /// A token to use for retriving the next page of results.
+  /// Next result can be fetched using this value inside `page_token` for the
+  /// next call to `ListThings`. If the field is empty there are no results
+  /// to retrive.
+  string next_page_token = 2;
+}
+
+/// Request message for `GetThing`.
+message GetThingRequest {
+  /// The unique ID of the Thing.
+  string thing_id = 1;
+}
+
+/// Request message for `EditThing`.
+message EditThingRequest {
+  /// The unique ID of the Thing.
+  string thing_id = 1;
+  /// If present, the new name for the Thing.
+  string name = 2;
+  /// If present, the new description of the Thing.
+  string description = 3;
+  /// If present, will replace the Location of the Thing.
+  Location location = 4;
+  /// If present, removes the connected labels from the Thing.
+  repeated string labels_removed = 5;
+  /// If present, connects the labels to the Thing.
+  repeated string labels_added = 6;
+  /// If present, will move the Thing to given `Folder`.
+  string folder_id = 7;
+}
+
+// Request message for `StarThing`.
+message StarThingRequest {
+  string thing_id = 1;
+}
+
+// Request message for `UnstarThing`.
+message UnstarThingRequest {
+  string thing_id = 1;
+}
+
+/// Request message for `WatchThing`.
+message WatchThingRequest {
+  /// The unique ID of the Thing.
+  string thing_id = 1;
+  // When present, filters the stream to only include the following
+  // event types.
+  repeated string event_types = 2;
+}
+
+/// Response message for `WatchThing`.
+message WatchThingResponse {
+  string event_type = 1;
+  // The sequence number of the event.
+  int64 version = 2;
+  // Timestamp of the event
+  google.protobuf.Timestamp timestamp = 3;
+  // The actual event
+  oneof event_data {
+    dt.apigw.v1.events.ThingStateChangeEvent state_changed = 10;
+    dt.apigw.v1.events.ThingTypeChangeEvent type_changed = 11;
+    dt.apigw.v1.events.ThingNameChangeEvent name_changed = 12;
+    dt.apigw.v1.events.ThingDescriptionChangeEvent description_changed = 13;
+    dt.apigw.v1.events.ThingLocationChangeEvent location_changed = 14;
+  }
+}
+
+// Request message for `Watch`.
+message WatchRequest {
+  // Query can include a lucene query to filter objects to match the watch
+  // request. Note that the query will only be resolved with the initial request,
+  // so new changes will not impact the things on which we're listening to.
+  // TODO: Give a better description. This might be a source of confusion.
+  string query = 1;
+  // Repeated list of things objects to listen for. If `query` is specified,
+  // 'thing_ids' will be ignored.
+  repeated string thing_ids = 2;
+  // When present, filters the stream to only include the following
+  // event types.
+  repeated string event_types = 3;
+}
+
+// Response message for `Watch`.
+message WatchResponse {
+  // The ID of the thing.
+  string thing_id = 1;
+  // String based enum of the actual event type?
+  string event_type = 2;
+  // The sequence number of the event.
+  int64 version = 3;
+  // Timestamp of the event
+  google.protobuf.Timestamp timestamp = 4;
+
+  oneof event_data {
+    dt.apigw.v1.events.ThingStateChangeEvent state_changed = 10;
+    dt.apigw.v1.events.ThingTypeChangeEvent type_changed = 11;
+    dt.apigw.v1.events.ThingNameChangeEvent name_changed = 12;
+    dt.apigw.v1.events.ThingDescriptionChangeEvent description_changed = 13;
+    dt.apigw.v1.events.ThingLocationChangeEvent location_changed = 14;
+  }
+}
+
+/// Request message for `BulkEditThing`.
+message BulkEditThingRequest {
+  // Use a query to resolve a list of Things.
+  string query = 1;
+  // The list of IDs for Things that should be included in the edit request.
+  repeated string thing_ids = 2;
+  /// If present, removes the connected labels from the Thing.
+  repeated string labels_removed = 3;
+  /// If present, connects the labels to the Thing.
+  repeated string labels_added = 4;
+  /// If present, will move the Thing to given `Folder`.
+  string folder_id = 5;
+}
+
+/// Response message for `BulkEditThing`.
+message BulkEditThingResponse {}
+
+// Request message for `ThingStateQuery`.
+message ThingStateQueryRequest {
+  // The unique ID of the `Thing` to target.
+  string thing_id = 1;
+  // The time period to use for the query.
+  Period time_period = 2;
+  // The fields to fetch
+  repeated string fields = 3;
+}
+
+// Response message for `ThingStateQuery`.
+message ThingStateQueryResponse {
+  repeated string columns = 1;
+  repeated  google.protobuf.Struct values = 2;
+}
+
+// Request message for `ThingStateAggregate`.
+message ThingStateAggregateRequest {
+  message Field {
+    enum Function {
+      NONE = 0;
+      COUNT = 1;
+      DISTINCT = 2;
+      MEAN = 3;
+      MEDIAN = 4;
+      MODE = 5;
+      SPREAD = 6;
+      SUM = 7;
+      BOTTOM = 8;
+      FIRST = 9;
+      LAST = 10;
+      MAX = 11;
+      MIN = 12;
+      PERCENTILE = 13;
+      TOP = 14;
+      DERIVATIVE = 15;
+      DIFFERENCE = 16;
+      ELAPSED = 17;
+      MOVING_AVERAGE = 18;
+      NON_NEGATIVE_DERIVATIVE = 19;
+      STDDEV = 20;
+    }
+    // Name of the field.
+    // I.e `temperature` or `rssi`.
+    string name = 1;
+    // The function to apply.
+    Function function = 2;
+  }
+
+  // The unique ID of the `Thing` to target.
+  string thing_id = 1;
+  // The fields filers to include in the query.
+  // Must be one of the fields available in `Thing.State.Properties`.
+  repeated Field fields = 3;
+  // The time period to use for the query.
+  Period time_period = 4;
+  // Interval in which result will be grouped (by default 1h)
+  // Supported units:
+  // `u` microseconds
+  // `ms` milliseconds
+  // `s` seconds
+  // `m` minutes
+  // `h` hours
+  // `d` days
+  // `w` weeks
+  // Example: 1w, 3d, 30m etc.
+  string interval = 5;
+  // Fill null values (by default 0)
+  string fill = 6;
+  // The group grouping by fields
+  repeated string group_by = 7;
+}
+
+// Response message for `ThingStateAggregate`.
+message ThingStateAggregateResponse {
+  repeated string columns = 1;
+  repeated  google.protobuf.Struct values = 2;
+}
+
+// Location represents geo-location.
+message Location {
+  double latitude = 1;
+  double longitude = 2;
+  // Current resolved address of the Thing
+  string address = 3;
+}
+
+// Thing is a representation of a physical device.
+message Thing {
+  // The unique ID of the `Thing`.
+  string id = 1;
+  // Optional name of the `Thing`.
+  string name = 2;
+  // Optional description of the `Thing`.
+  string description = 3;
+  // Optional marking of the `Thing`.
+  bool starred = 4;
+  // The timestamp of when this `Thing` was first seen.
+  google.protobuf.Timestamp registered = 5;
+  // The timestamp of when the thing was last modified.
+  google.protobuf.Timestamp last_updated = 6;
+  // Optional custom uploaded image of the `Thing`.
+  Image image = 7;
+  // The attached `Folder`.
+  Folder folder = 8;
+  // Optional set location.
+  Location location = 9;
+  // List of attached labels.
+  repeated Label labels = 10;
+  // The current reported state.
+  // When blank, no reporting has been made.
+  ThingState state = 11;
+  // The type of `Thing`.
+  ThingType type = 12;
+  // Current running firmware.
+  string firmware = 13;
+  // Last notification
+  Notification last_notification = 14;
+}
+
+message ThingType {
+  string id = 1;
+  string name = 2;
+  string icon = 3; // SVG
+  string chart_type = 4;
+  string primary = 5;
+}
+
+message ThingState {
+  string id = 1;
+  google.protobuf.Timestamp updated = 2;
+  Properties properties = 3;
+}
+
+// Workaround until golang/proto has fixed the issues with oneof and
+// structpb.Struct / structpb.Value.
+message Properties {
+  // Temperature value in celcius
+  float temperature = 1;
+  // On proximity nodes this will report `true` when the precense of
+  // an object is detected, otherwise `false`.
+  bool object_present = 2;
+  // If the state change indicates that the node has been touched,
+  // `touch` is reported as `true`. Otherwise `false`.
+  bool touch = 3;
+  // The timestamp of the `last_pressed`
+  google.protobuf.Timestamp last_pressed = 5;
+  // The signal strength in dBM
+  sint32 rssi = 6;
+  // The signal strength in values from 0-5
+  int32 rssi_strength = 7;
+  // The battery voltage
+  float battery_voltage = 8;
+  // The battery percentage (this is just a simple estimate).
+  float battery_percentage = 9;
+  // The Cloud Connector ID broadcasting the signal.
+  string connector_id = 10;
+}

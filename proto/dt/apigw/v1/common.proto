@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package dt.apigw.v1;
+
+option go_package = "bitbucket.org/disruptive-technologies/cloud-apis/dt/apigw/v1";
+option java_multiple_files = true;
+option java_outer_classname = "CommonProto";
+option java_package = "com.dt.apigw.v1";
+option objc_class_prefix = "DTD";
+
+import "google/protobuf/timestamp.proto";
+
+// Image represents an uploaded image.
+message Image {
+  string large_url = 1;
+  string medium_url = 2;
+  string small_url = 3;
+}
+
+// Period represents a period in time.
+message Period {
+    google.protobuf.Timestamp start = 1;
+    google.protobuf.Timestamp end = 2;
+}
