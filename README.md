@@ -27,7 +27,7 @@ var client = new dt.services.ThingServiceClient("api.disruptive-technologies.com
 // Fetch a Thing object by its address.
 var req = new dt.messages.thing.GetThingRequest();
 req.setThingId("thing-address");
-thingClient.getThing(req, function (err, resp) {
+client.getThing(req, function (err, resp) {
   if (err) {
       console.log("error:" , err);
     } else {
